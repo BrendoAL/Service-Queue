@@ -1,0 +1,7 @@
+CREATE TABLE counters (
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(50)  NOT NULL,
+    active      BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+

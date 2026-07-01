@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: queue-system
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:28800000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
