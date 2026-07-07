@@ -72,6 +72,25 @@ Use este path no health check do target group:
 /actuator/health
 ```
 
+## GitHub Actions
+
+O workflow `.github/workflows/backend-ci.yml` roda testes, gera o jar e valida a
+imagem Docker em pushes e pull requests.
+
+Para ativar deploy automatico no ECS ao fazer push para `main` ou `master`,
+configure estas variaveis em `Settings > Secrets and variables > Actions >
+Variables`:
+
+```text
+AWS_ROLE_TO_ASSUME=arn:aws:iam::997985547557:role/NOME_DA_ROLE_GITHUB_ACTIONS
+ECR_REPOSITORY=NOME_DO_REPOSITORIO_ECR
+ECS_CLUSTER=default
+ECS_SERVICE=queue-backend-5bc4
+```
+
+Use OIDC com `AWS_ROLE_TO_ASSUME`; nao coloque access key da AWS no GitHub
+Actions.
+
 ## Execucao local
 
 Crie um arquivo local `.env` baseado no `.env.example`, preencha somente
