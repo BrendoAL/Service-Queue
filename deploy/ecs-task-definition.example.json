@@ -1,0 +1,71 @@
+{
+  "family": "queue-backend-prod",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::997985547557:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::997985547557:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "queue-backend",
+      "image": "997985547557.dkr.ecr.us-east-2.amazonaws.com/queue-backend:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "JWT_EXPIRATION_MS",
+          "value": "28800000"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:SPRING_DATASOURCE_URL::"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:SPRING_DATASOURCE_USERNAME::"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:SPRING_DATASOURCE_PASSWORD::"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:JWT_SECRET::"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8080/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/queue-backend-prod",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

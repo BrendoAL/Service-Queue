@@ -19,3 +19,8 @@ Totem gera senha, painel público recebe atualização via WebSocket, atendente 
 ./gradlew :backend:bootJar
 docker compose up -d
 ```
+
+## Configuracao AWS
+
+O backend usa variaveis de ambiente para banco e JWT. Veja
+`docs/aws-ecs.md` para o mapeamento do ECS/Fargate com AWS Secrets Manager.
