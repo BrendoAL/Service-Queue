@@ -46,6 +46,14 @@
         {
           "name": "JWT_SECRET",
           "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:JWT_SECRET::"
+        },
+        {
+          "name": "QUEUE_ADMIN_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:QUEUE_ADMIN_USERNAME::"
+        },
+        {
+          "name": "QUEUE_ADMIN_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:QUEUE_ADMIN_PASSWORD::"
         }
       ],
       "healthCheck": {

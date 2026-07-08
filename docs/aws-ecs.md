@@ -14,6 +14,8 @@ SPRING_DATASOURCE_URL
 SPRING_DATASOURCE_USERNAME
 SPRING_DATASOURCE_PASSWORD
 JWT_SECRET
+QUEUE_ADMIN_USERNAME
+QUEUE_ADMIN_PASSWORD
 ```
 
 `JWT_SECRET` precisa ser Base64 e ter pelo menos 256 bits para HS256. Gere com:
@@ -44,9 +46,20 @@ pela aplicacao, mapeie cada chave JSON para a variavel de ambiente equivalente:
   {
     "name": "JWT_SECRET",
     "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:JWT_SECRET::"
+  },
+  {
+    "name": "QUEUE_ADMIN_USERNAME",
+    "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:QUEUE_ADMIN_USERNAME::"
+  },
+  {
+    "name": "QUEUE_ADMIN_PASSWORD",
+    "valueFrom": "arn:aws:secretsmanager:us-east-2:997985547557:secret:secrets-mysql-memPRP:QUEUE_ADMIN_PASSWORD::"
   }
 ]
 ```
+
+O usuario admin inicial so e criado quando `QUEUE_ADMIN_PASSWORD` esta
+configurado e ainda nao existe um usuario com `QUEUE_ADMIN_USERNAME`.
 
 O arquivo `deploy/ecs-task-definition.example.json` ja contem esse mapeamento
 pronto para usar como base da task definition. Troque apenas a imagem ECR
