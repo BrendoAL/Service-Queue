@@ -34,6 +34,13 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.NOT_FOUND, exception.getMessage(), request);
     }
 
+    @ExceptionHandler(InvalidTicketStateException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidTicketStateException(
+            InvalidTicketStateException exception,
+            HttpServletRequest request) {
+        return buildError(HttpStatus.CONFLICT, exception.getMessage(), request);
+    }
+
     private ResponseEntity<ApiErrorResponse> buildError(
             HttpStatus status,
             String message,
