@@ -87,6 +87,37 @@ Use este path no health check do target group:
 /actuator/health
 ```
 
+## Observabilidade com Prometheus e Grafana
+
+O backend expoe metricas Prometheus em:
+
+```text
+/actuator/prometheus
+```
+
+Para evitar manter Prometheus/Grafana dentro do ECS, use:
+
+- Amazon Managed Service for Prometheus para armazenar metricas.
+- Amazon Managed Grafana para dashboards.
+- AWS Distro for OpenTelemetry Collector como sidecar ou servico ECS para coletar
+  `http://localhost:8080/actuator/prometheus`.
+
+O arquivo `deploy/adot-collector-prometheus.yml` contem uma configuracao base do
+collector. Suba esse conteudo em um parametro SSM ou injete como
+`AOT_CONFIG_CONTENT` no container do ADOT.
+
+A task role usada pelo ADOT precisa permitir escrita no workspace Prometheus:
+
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "aps:RemoteWrite"
+  ],
+  "Resource": "arn:aws:aps:us-east-2:997985547557:workspace/SEU_WORKSPACE_ID"
+}
+```
+
 ## GitHub Actions
 
 O workflow `.github/workflows/backend-ci.yml` roda testes, gera o jar e valida a

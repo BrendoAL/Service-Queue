@@ -32,6 +32,13 @@ Exemplo:
 QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS=http://localhost:4200,https://*.example.com
 ```
 
+## Observabilidade
+
+O backend expõe métricas Prometheus em `/actuator/prometheus` e health check em
+`/actuator/health`. Na AWS, use o ADOT Collector para coletar esse endpoint e
+enviar para Amazon Managed Service for Prometheus; o Grafana gerenciado pode usar
+esse workspace como data source.
+
 ## Comandos
 
 ```bash
