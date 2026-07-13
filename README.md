@@ -12,6 +12,15 @@ Projeto full stack para gerenciamento de senhas de atendimento.
 
 Totem gera senha, painel público recebe atualização via WebSocket, atendente chama/finaliza senha e admin consulta métricas.
 
+## WebSocket
+
+O backend expõe STOMP em `/ws`.
+
+- Assine `/topic/tickets` para receber eventos `CREATED`, `CALLED`, `RECALLED` e `COMPLETED`.
+- Assine `/topic/queue/status` para receber o resumo atualizado da fila após mudanças em senhas.
+
+Configure as origens permitidas com `QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS`.
+
 ## Comandos
 
 ```bash

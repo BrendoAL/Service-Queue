@@ -11,3 +11,7 @@ management:
     web:
       exposure:
         include: health
+
+queue:
+  websocket:
+    allowed-origin-patterns: ${QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS:http://localhost:4200}

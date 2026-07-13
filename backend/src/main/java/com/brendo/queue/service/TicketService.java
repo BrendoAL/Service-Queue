@@ -28,14 +28,17 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final TicketSequenceRepository ticketSequenceRepository;
     private final CounterRepository counterRepository;
+    private final QueueEventPublisher queueEventPublisher;
 
     public TicketService(
             TicketRepository ticketRepository,
             TicketSequenceRepository ticketSequenceRepository,
-            CounterRepository counterRepository) {
+            CounterRepository counterRepository,
+            QueueEventPublisher queueEventPublisher) {
         this.ticketRepository = ticketRepository;
         this.ticketSequenceRepository = ticketSequenceRepository;
         this.counterRepository = counterRepository;
+        this.queueEventPublisher = queueEventPublisher;
     }
 
     @Transactional
@@ -45,7 +48,9 @@ public class TicketService {
             : request.priority();
         Ticket ticket = new Ticket(nextTicketNumber(), priority);
 
-        return toResponse(ticketRepository.save(ticket));
+        TicketResponse response = toResponse(ticketRepository.save(ticket));
+        queueEventPublisher.publishTicketChanged("CREATED", response, this::queueStatus);
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -66,21 +71,27 @@ public class TicketService {
             .orElseThrow(() -> new ResourceNotFoundException("No waiting tickets available"));
 
         ticket.call(counter);
-        return toResponse(ticket);
+        TicketResponse response = toResponse(ticket);
+        queueEventPublisher.publishTicketChanged("CALLED", response, this::queueStatus);
+        return response;
     }
 
     @Transactional
     public TicketResponse recall(Long id) {
         Ticket ticket = findById(id);
         ticket.recall();
-        return toResponse(ticket);
+        TicketResponse response = toResponse(ticket);
+        queueEventPublisher.publishTicketChanged("RECALLED", response, this::queueStatus);
+        return response;
     }
 
     @Transactional
     public TicketResponse complete(Long id) {
         Ticket ticket = findById(id);
         ticket.complete();
-        return toResponse(ticket);
+        TicketResponse response = toResponse(ticket);
+        queueEventPublisher.publishTicketChanged("COMPLETED", response, this::queueStatus);
+        return response;
     }
 
     @Transactional(readOnly = true)

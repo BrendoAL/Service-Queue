@@ -15,15 +15,18 @@ import com.brendo.queue.repository.CounterRepository;
 import com.brendo.queue.repository.TicketRepository;
 import com.brendo.queue.repository.TicketSequenceRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,10 +36,12 @@ class TicketServiceTest {
     private final TicketRepository ticketRepository = mock(TicketRepository.class);
     private final TicketSequenceRepository ticketSequenceRepository = mock(TicketSequenceRepository.class);
     private final CounterRepository counterRepository = mock(CounterRepository.class);
+    private final QueueEventPublisher queueEventPublisher = mock(QueueEventPublisher.class);
     private final TicketService ticketService = new TicketService(
         ticketRepository,
         ticketSequenceRepository,
-        counterRepository
+        counterRepository,
+        queueEventPublisher
     );
 
     @Test
@@ -51,6 +56,11 @@ class TicketServiceTest {
         assertThat(response.priority()).isEqualTo(TicketPriority.PRIORITY);
         assertThat(response.status()).isEqualTo(TicketStatus.WAITING);
         verify(ticketRepository).save(any(Ticket.class));
+        verify(queueEventPublisher).publishTicketChanged(
+            eq("CREATED"),
+            any(TicketResponse.class),
+            ArgumentMatchers.<Supplier<QueueStatusResponse>>any()
+        );
     }
 
     @Test
@@ -66,6 +76,11 @@ class TicketServiceTest {
         assertThat(response.status()).isEqualTo(TicketStatus.CALLED);
         assertThat(response.counterName()).isEqualTo("Guiche 1");
         assertThat(response.calledAt()).isNotNull();
+        verify(queueEventPublisher).publishTicketChanged(
+            eq("CALLED"),
+            any(TicketResponse.class),
+            ArgumentMatchers.<Supplier<QueueStatusResponse>>any()
+        );
     }
 
     @Test
@@ -90,6 +105,11 @@ class TicketServiceTest {
 
         assertThat(response.status()).isEqualTo(TicketStatus.COMPLETED);
         assertThat(response.completedAt()).isNotNull();
+        verify(queueEventPublisher).publishTicketChanged(
+            eq("COMPLETED"),
+            any(TicketResponse.class),
+            ArgumentMatchers.<Supplier<QueueStatusResponse>>any()
+        );
     }
 
     @Test
