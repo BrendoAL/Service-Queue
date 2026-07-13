@@ -62,7 +62,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/prometheus").permitAll()
                 .requestMatchers("/api/tickets/next/call", "/api/tickets/*/recall", "/api/tickets/*/complete")
                     .hasAnyRole("ATENDENTE", "ADMIN")
-                .requestMatchers("/api/counters", "/api/counters/**", "/api/reports/**").hasRole("ADMIN")
+                .requestMatchers("/api/counters", "/api/counters/**", "/api/users", "/api/users/**", "/api/reports/**")
+                    .hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

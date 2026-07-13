@@ -44,5 +44,14 @@ public class User {
         this.passwordHash = passwordHash;
         this.role = role;
     }
-}
 
+    public void updateProfile(String username, String role, Long counterId) {
+        this.username = username;
+        this.role = role;
+        this.counterId = counterId;
+    }
+
+    public void changePassword(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+}
