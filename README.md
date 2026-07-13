@@ -16,7 +16,7 @@ Totem gera senha, painel público recebe atualização via WebSocket, atendente 
 
 O backend expõe STOMP em `/ws`.
 
-- Assine `/topic/tickets` para receber eventos `CREATED`, `CALLED`, `RECALLED` e `COMPLETED`.
+- Assine `/topic/tickets` para receber eventos `CREATED`, `CALLED`, `RECALLED`, `STARTED`, `TRANSFERRED`, `CANCELLED` e `COMPLETED`.
 - Assine `/topic/queue/status` para receber o resumo atualizado da fila após mudanças em senhas.
 
 Configure as origens permitidas com `QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS`.

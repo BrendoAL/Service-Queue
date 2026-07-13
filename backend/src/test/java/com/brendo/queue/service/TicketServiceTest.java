@@ -2,6 +2,7 @@ package com.brendo.queue.service;
 
 import com.brendo.queue.dto.request.CallNextTicketRequest;
 import com.brendo.queue.dto.request.CreateTicketRequest;
+import com.brendo.queue.dto.request.TransferTicketRequest;
 import com.brendo.queue.dto.response.QueueStatusResponse;
 import com.brendo.queue.dto.response.TicketResponse;
 import com.brendo.queue.entity.Counter;
@@ -92,6 +93,70 @@ class TicketServiceTest {
         assertThatThrownBy(() -> ticketService.callNext(new CallNextTicketRequest(1L)))
             .isInstanceOf(InvalidTicketStateException.class)
             .hasMessage("Counter is inactive: 1");
+    }
+
+    @Test
+    void listFiltersTicketsByStatus() {
+        Ticket ticket = new Ticket("0001", TicketPriority.PRIORITY);
+        when(ticketRepository.findAllByStatusOrderByPriorityDescCreatedAtAsc(TicketStatus.WAITING))
+            .thenReturn(List.of(ticket));
+
+        List<TicketResponse> response = ticketService.list(TicketStatus.WAITING);
+
+        assertThat(response).hasSize(1);
+        assertThat(response.getFirst().number()).isEqualTo("0001");
+        verify(ticketRepository).findAllByStatusOrderByPriorityDescCreatedAtAsc(TicketStatus.WAITING);
+    }
+
+    @Test
+    void startServiceMarksCalledTicketAsInService() {
+        Counter counter = new Counter("Guiche 1");
+        Ticket ticket = new Ticket("0001", TicketPriority.NORMAL);
+        ticket.call(counter);
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+
+        TicketResponse response = ticketService.startService(1L);
+
+        assertThat(response.status()).isEqualTo(TicketStatus.IN_SERVICE);
+        verify(queueEventPublisher).publishTicketChanged(
+            eq("STARTED"),
+            any(TicketResponse.class),
+            ArgumentMatchers.<Supplier<QueueStatusResponse>>any()
+        );
+    }
+
+    @Test
+    void transferAssignsActiveCounter() {
+        Counter firstCounter = new Counter("Guiche 1");
+        Counter secondCounter = new Counter("Guiche 2");
+        Ticket ticket = new Ticket("0001", TicketPriority.NORMAL);
+        ticket.call(firstCounter);
+        when(counterRepository.findById(2L)).thenReturn(Optional.of(secondCounter));
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+
+        TicketResponse response = ticketService.transfer(1L, new TransferTicketRequest(2L));
+
+        assertThat(response.counterName()).isEqualTo("Guiche 2");
+        verify(queueEventPublisher).publishTicketChanged(
+            eq("TRANSFERRED"),
+            any(TicketResponse.class),
+            ArgumentMatchers.<Supplier<QueueStatusResponse>>any()
+        );
+    }
+
+    @Test
+    void cancelMarksActiveTicketAsCancelled() {
+        Ticket ticket = new Ticket("0001", TicketPriority.NORMAL);
+        when(ticketRepository.findById(1L)).thenReturn(Optional.of(ticket));
+
+        TicketResponse response = ticketService.cancel(1L);
+
+        assertThat(response.status()).isEqualTo(TicketStatus.CANCELLED);
+        verify(queueEventPublisher).publishTicketChanged(
+            eq("CANCELLED"),
+            any(TicketResponse.class),
+            ArgumentMatchers.<Supplier<QueueStatusResponse>>any()
+        );
     }
 
     @Test

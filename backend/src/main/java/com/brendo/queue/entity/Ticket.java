@@ -75,6 +75,30 @@ public class Ticket {
         this.calledAt = LocalDateTime.now();
     }
 
+    public void startService() {
+        if (status != TicketStatus.CALLED) {
+            throw new InvalidTicketStateException("Only called tickets can start service");
+        }
+
+        this.status = TicketStatus.IN_SERVICE;
+    }
+
+    public void transfer(Counter counter) {
+        if (status != TicketStatus.CALLED && status != TicketStatus.IN_SERVICE) {
+            throw new InvalidTicketStateException("Only called tickets can be transferred");
+        }
+
+        this.counter = counter;
+    }
+
+    public void cancel() {
+        if (status == TicketStatus.COMPLETED || status == TicketStatus.CANCELLED) {
+            throw new InvalidTicketStateException("Only active tickets can be cancelled");
+        }
+
+        this.status = TicketStatus.CANCELLED;
+    }
+
     public void complete() {
         if (status != TicketStatus.CALLED && status != TicketStatus.IN_SERVICE) {
             throw new InvalidTicketStateException("Only called tickets can be completed");

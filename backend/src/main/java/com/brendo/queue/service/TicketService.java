@@ -2,6 +2,7 @@ package com.brendo.queue.service;
 
 import com.brendo.queue.dto.request.CallNextTicketRequest;
 import com.brendo.queue.dto.request.CreateTicketRequest;
+import com.brendo.queue.dto.request.TransferTicketRequest;
 import com.brendo.queue.dto.response.QueueStatusResponse;
 import com.brendo.queue.dto.response.TicketResponse;
 import com.brendo.queue.entity.Counter;
@@ -58,6 +59,17 @@ public class TicketService {
         return toResponse(findById(id));
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<TicketResponse> list(TicketStatus status) {
+        java.util.List<Ticket> tickets = status == null
+            ? ticketRepository.findAllByOrderByCreatedAtDesc()
+            : ticketRepository.findAllByStatusOrderByPriorityDescCreatedAtAsc(status);
+
+        return tickets.stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
     @Transactional
     public TicketResponse callNext(CallNextTicketRequest request) {
         Counter counter = counterRepository.findById(request.counterId())
@@ -86,12 +98,51 @@ public class TicketService {
     }
 
     @Transactional
+    public TicketResponse startService(Long id) {
+        Ticket ticket = findById(id);
+        ticket.startService();
+        TicketResponse response = toResponse(ticket);
+        queueEventPublisher.publishTicketChanged("STARTED", response, this::queueStatus);
+        return response;
+    }
+
+    @Transactional
+    public TicketResponse transfer(Long id, TransferTicketRequest request) {
+        Counter counter = findActiveCounter(request.counterId());
+        Ticket ticket = findById(id);
+        ticket.transfer(counter);
+        TicketResponse response = toResponse(ticket);
+        queueEventPublisher.publishTicketChanged("TRANSFERRED", response, this::queueStatus);
+        return response;
+    }
+
+    @Transactional
+    public TicketResponse cancel(Long id) {
+        Ticket ticket = findById(id);
+        ticket.cancel();
+        TicketResponse response = toResponse(ticket);
+        queueEventPublisher.publishTicketChanged("CANCELLED", response, this::queueStatus);
+        return response;
+    }
+
+    @Transactional
     public TicketResponse complete(Long id) {
         Ticket ticket = findById(id);
         ticket.complete();
         TicketResponse response = toResponse(ticket);
         queueEventPublisher.publishTicketChanged("COMPLETED", response, this::queueStatus);
         return response;
+    }
+
+    private Counter findActiveCounter(Long counterId) {
+        Counter counter = counterRepository.findById(counterId)
+            .orElseThrow(() -> new ResourceNotFoundException("Counter not found: " + counterId));
+
+        if (!counter.isActive()) {
+            throw new InvalidTicketStateException("Counter is inactive: " + counterId);
+        }
+
+        return counter;
     }
 
     @Transactional(readOnly = true)

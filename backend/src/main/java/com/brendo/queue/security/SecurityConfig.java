@@ -60,7 +60,14 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/prometheus").permitAll()
-                .requestMatchers("/api/tickets/next/call", "/api/tickets/*/recall", "/api/tickets/*/complete")
+                .requestMatchers(
+                    "/api/tickets/next/call",
+                    "/api/tickets/*/recall",
+                    "/api/tickets/*/start",
+                    "/api/tickets/*/transfer",
+                    "/api/tickets/*/cancel",
+                    "/api/tickets/*/complete"
+                )
                     .hasAnyRole("ATENDENTE", "ADMIN")
                 .requestMatchers("/api/counters", "/api/counters/**", "/api/users", "/api/users/**", "/api/reports/**")
                     .hasRole("ADMIN")
