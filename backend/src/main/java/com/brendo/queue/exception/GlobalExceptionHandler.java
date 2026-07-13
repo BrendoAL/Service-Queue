@@ -27,6 +27,13 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, "Invalid request body", request);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException exception,
+            HttpServletRequest request) {
+        return buildError(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException exception,

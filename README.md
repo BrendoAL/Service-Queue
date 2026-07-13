@@ -39,6 +39,14 @@ O backend expõe métricas Prometheus em `/actuator/prometheus` e health check e
 enviar para Amazon Managed Service for Prometheus; o Grafana gerenciado pode usar
 esse workspace como data source.
 
+## Relatórios
+
+Endpoints administrativos:
+
+- `GET /api/reports/summary?from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /api/reports/daily?from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /api/reports/counters?from=YYYY-MM-DD&to=YYYY-MM-DD`
+
 ## Comandos
 
 ```bash
