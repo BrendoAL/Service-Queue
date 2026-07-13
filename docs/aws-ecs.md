@@ -5,6 +5,8 @@ Configure estas variaveis simples na task definition do ECS:
 ```text
 SPRING_PROFILES_ACTIVE=prod
 JWT_EXPIRATION_MS=28800000
+QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS=https://
+QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS=https://
 ```
 
 Configure estas variaveis como ECS secrets vindos do AWS Secrets Manager:

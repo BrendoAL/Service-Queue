@@ -13,5 +13,7 @@ management:
         include: health
 
 queue:
+  cors:
+    allowed-origin-patterns: ${QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:4200}
   websocket:
-    allowed-origin-patterns: ${QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS:http://localhost:4200}
+    allowed-origin-patterns: ${QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS:${QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:4200}}

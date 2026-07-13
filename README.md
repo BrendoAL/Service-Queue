@@ -21,6 +21,17 @@ O backend expõe STOMP em `/ws`.
 
 Configure as origens permitidas com `QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS`.
 
+## CORS
+
+Configure as origens permitidas para chamadas REST com
+`QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS`.
+
+Exemplo:
+
+```text
+QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS=http://localhost:4200,https://*.example.com
+```
+
 ## Comandos
 
 ```bash
