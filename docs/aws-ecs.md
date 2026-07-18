@@ -5,8 +5,8 @@ Configure estas variaveis simples na task definition do ECS:
 ```text
 SPRING_PROFILES_ACTIVE=prod
 JWT_EXPIRATION_MS=28800000
-QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS=https://
-QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS=https://
+QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS=https://URL_DO_FRONTEND
+QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS=https://URL_DO_FRONTEND
 ```
 
 Configure estas variaveis como ECS secrets vindos do AWS Secrets Manager:
@@ -60,6 +60,24 @@ pela aplicacao, mapeie cada chave JSON para a variavel de ambiente equivalente:
 ]
 ```
 
+O valor do segredo precisa ser um JSON com chaves exatamente iguais as variaveis
+acima. Exemplo de formato, sem usar estes valores literais:
+
+```json
+{
+  "SPRING_DATASOURCE_URL": "jdbc:mysql://HOST:3306/queue_db",
+  "SPRING_DATASOURCE_USERNAME": "admin",
+  "SPRING_DATASOURCE_PASSWORD": "senha-do-banco",
+  "JWT_SECRET": "secret-base64-com-32-bytes-ou-mais",
+  "QUEUE_ADMIN_USERNAME": "admin",
+  "QUEUE_ADMIN_PASSWORD": "senha-inicial-do-admin"
+}
+```
+
+Se a chave estiver como `JWT Secret`, com espaco, ou se
+`QUEUE_ADMIN_PASSWORD` nao existir mas estiver mapeado na task definition, a
+task pode falhar antes da aplicacao iniciar.
+
 O usuario admin inicial so e criado quando `QUEUE_ADMIN_PASSWORD` esta
 configurado e ainda nao existe um usuario com `QUEUE_ADMIN_USERNAME`.
 
@@ -86,6 +104,55 @@ Use este path no health check do target group:
 ```text
 /actuator/health
 ```
+
+Se a aplicacao usa MySQL, o health check do Actuator tambem fica `DOWN` quando
+o backend nao consegue conectar no RDS. Nesse caso o ALB pode responder `503`
+porque nao ha nenhum target saudavel.
+
+## Checklist quando o ECS fica com 0 tasks rodando
+
+1. Veja o motivo da parada da ultima task:
+
+```bash
+aws ecs list-tasks \
+  --cluster default \
+  --service-name queue-backend-5bc4 \
+  --desired-status STOPPED \
+  --region us-east-2
+
+aws ecs describe-tasks \
+  --cluster default \
+  --tasks TASK_ARN \
+  --region us-east-2
+```
+
+2. Veja os eventos recentes do servico:
+
+```bash
+aws ecs describe-services \
+  --cluster default \
+  --services queue-backend-5bc4 \
+  --region us-east-2 \
+  --query 'services[0].events[0:10].[createdAt,message]' \
+  --output table
+```
+
+3. Veja os logs da aplicacao:
+
+```bash
+aws logs tail /ecs/queue-backend-prod \
+  --region us-east-2 \
+  --since 1h
+```
+
+4. Confirme os pontos que mais costumam derrubar essa task:
+
+- A execution role do ECS consegue ler `secretsmanager:GetSecretValue`.
+- O segredo `secrets-mysql` e JSON e tem todas as chaves mapeadas.
+- A task esta em subnets com rota ate o RDS.
+- O security group do RDS aceita entrada MySQL `3306` a partir do security group da task.
+- O target group usa porta `8080` e health check `/actuator/health`.
+- As origens reais do frontend estao em `QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS` e `QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS`.
 
 ## Observabilidade com Prometheus e Grafana
 

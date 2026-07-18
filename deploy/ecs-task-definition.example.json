@@ -28,6 +28,14 @@
         {
           "name": "JWT_EXPIRATION_MS",
           "value": "28800000"
+        },
+        {
+          "name": "QUEUE_CORS_ALLOWED_ORIGIN_PATTERNS",
+          "value": "https://URL_DO_FRONTEND"
+        },
+        {
+          "name": "QUEUE_WEBSOCKET_ALLOWED_ORIGIN_PATTERNS",
+          "value": "https://URL_DO_FRONTEND"
         }
       ],
       "secrets": [
